@@ -69,7 +69,7 @@ form .error {
                                     </div>
                                     <div>
                                         <label class="cursor-pointer">
-                                            <input type="radio" name="property_type" id="property_type_rent"  value="2" @if(old('property_type',$row->property_type ?? 0) == 2) checked @endif> 
+                                            <input type="radio" name="property_type" id="property_type_rent"  value="2" @if(old('property_type',$row->property_type ?? 0) == 2) checked @else checked @endif> 
                                             {{__("For rent")}}
                                         </label>
                                     </div>
@@ -143,7 +143,8 @@ $(function() {
       address : "required",
       map_lat : "required",
       map_lng : "required",
-     
+      bed      : "required",
+      bathroom  : "required"
      
     },
     // Specify validation error messages
@@ -156,6 +157,8 @@ $(function() {
         address: "Please enter your Address",
         map_lat: "Please enter your lat",
         map_lng: "Please enter your lng",
+        bed     : "Please enter your bed",
+        bathroom : "Please enter your bathroom"
      
     },
     // Make sure the form is submitted to the destination defined
