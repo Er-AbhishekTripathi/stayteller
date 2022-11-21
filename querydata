@@ -1,0 +1,3 @@
+//16-11
+
+ALTER TABLE `bravo_rooms` ADD `refundable` TINYINT(1) NULL DEFAULT NULL COMMENT '0->non refundable\r\n1=>refundable' AFTER `deposite`;
