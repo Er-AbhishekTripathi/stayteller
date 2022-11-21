@@ -134,7 +134,7 @@
 <div class="row">
   
 
-    <div class="col-sm-6 mb10">
+    <div class="col-sm-8 col-lg-6 col-md-6 mb10">
 
     <div class="panel">
             <div class="panel-title"><strong>{{ __('Single Update')}}</strong></div>
@@ -144,7 +144,7 @@
         </div>
         
     </div>
-    <div class="col-sm-6 mb10">
+    <div class="col-sm-4 col-lg-6 col-md-6 mb10">
         <div class="panel">
             <div class="panel-title"><strong>{{ __('Bulk Update')}}</strong></div>
             <div class="panel-body">
