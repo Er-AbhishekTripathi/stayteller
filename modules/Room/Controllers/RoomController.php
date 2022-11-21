@@ -269,6 +269,50 @@ class RoomController extends Controller
 
     public function store(Request $request , $id){
 
+        $sharing_type = $request->sharing_type;
+
+        switch( $request->sharing_type) {
+            case('33'):
+ 
+                $sharingtype  = 1;
+ 
+                break;
+ 
+            case('34'):
+                 
+                $sharingtype  = 2;
+ 
+                break;
+            case('35'):
+                 
+                    $sharingtype  = 3;
+     
+                    break;    
+            case('36'):
+                 
+                    $sharingtype  = 4;
+     
+                    break;    
+            case('37'):
+                 
+                    $sharingtype  = 5;
+     
+                    break;    
+            case('38'):
+                 
+                    $sharingtype  = 6;
+     
+                    break;    
+            case('39'):
+                 
+                    $sharingtype  = 10;
+     
+                    break;    
+ 
+            default:
+                $sharingtype = '0.';
+        }
+
         
        
         $attributecollection  = $this->attributesClass::where('service', 'property')->get();
@@ -304,7 +348,7 @@ class RoomController extends Controller
         $room->name                 = $request->name;
         $room->room_info            = json_encode($attributedata);
         $room->amenities_details    = json_encode($feature);
-        $room->no_of_room           = $request->no_of_room;
+        $room->no_of_room           = $request->no_of_room * $sharingtype;
         $room->price_per_month      = $request->price_per_month;
         
         $room->refundable             = $request->refundable;

@@ -200,6 +200,51 @@ class RoomController extends AdminController
         return view('Room::admin.create', $data);
     }
     public function store(Request $request , $id){
+
+        //dd($request->input());
+        $sharing_type = $request->sharing_type;
+
+        switch( $request->sharing_type) {
+            case('33'):
+ 
+                $sharingtype  = 1;
+ 
+                break;
+ 
+            case('34'):
+                 
+                $sharingtype  = 2;
+ 
+                break;
+            case('35'):
+                 
+                    $sharingtype  = 3;
+     
+                    break;    
+            case('36'):
+                 
+                    $sharingtype  = 4;
+     
+                    break;    
+            case('37'):
+                 
+                    $sharingtype  = 5;
+     
+                    break;    
+            case('38'):
+                 
+                    $sharingtype  = 6;
+     
+                    break;    
+            case('39'):
+                 
+                    $sharingtype  = 10;
+     
+                    break;    
+ 
+            default:
+                $sharingtype = '0.';
+        }
        
         $attributecollection  = $this->attributesClass::where('service', 'property')->get();
         $attributedata = array();
@@ -228,6 +273,8 @@ class RoomController extends AdminController
             $room                       = new Room();
 
         }
+
+       
        
        
         $room->property_id          = $request->property_id;
@@ -251,7 +298,7 @@ class RoomController extends AdminController
             $add_days =  $i++;
             $ppdate = date('Y-m-d',strtotime($date.' +'.$add_days.'days'));
             $room_availability->room_id             = $room->id;
-            $room_availability->available_room      = $room->no_of_room;
+            $room_availability->available_room      = $room->no_of_room * $sharingtype;
             $room_availability->start_date          = $ppdate;
             $room_availability->save();
         }
