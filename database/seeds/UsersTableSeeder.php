@@ -43,7 +43,7 @@ class UsersTableSeeder extends Seeder
             'user_social' => '[{"title":"facebook","code":"fa fa-facebook","link":"#"},{"title":"twitter","code":"fa fa-twitter","link":"#"}]'
         ]);
         $user = \App\User::where('email','admin@earney.com')->first();
-        $user->assignRole('Admin');
+        $user->assignRole('administrator'); 
 
 
         DB::table('users')->insert([
