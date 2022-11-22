@@ -359,18 +359,23 @@ class RoomController extends Controller
     if($id == 0){
         
         $n= 90;
-        $i = 1;
+        $i = 0;
         $date = date(date('d-m-Y'));
-        $room_availability                      = new Availability();
+      
         while($i <= $n) {
+            $room_availability                      = new Availability();
             $add_days =  $i++;
             $ppdate = date('Y-m-d',strtotime($date.' +'.$add_days.'days'));
             $room_availability->room_id             = $room->id;
-            $room_availability->available_room      = $room->no_of_room;
-            $room_availability->start_date          = $ppdate;
-            $room_availability->save();
+             $room_availability->available_room      = $room->no_of_room;
+             $room_availability->start_date          = $ppdate;
+             $room_availability->save();
+
+           echo $ppdate.'<br>';
         }
+        //dd('welcome');
     }
+
         
 
         return back()->with('success', ($id and $id>0) ? __('Room updated'):__("Room created"));
