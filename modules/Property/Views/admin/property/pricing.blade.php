@@ -1,6 +1,6 @@
 <?php  $languages = \Modules\Language\Models\Language::getActive();  ?>
 @if(is_default_lang())
-<div class="panel">
+<div class="panel" style="display: none;">
     <div class="panel-title"><strong>{{__("Pricing")}}</strong></div>
     <div class="panel-body">
         @if(is_default_lang())

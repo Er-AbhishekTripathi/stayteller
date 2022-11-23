@@ -551,7 +551,7 @@ class RoomController extends Controller
             $availabledate = date('Y-m-d',strtotime($this->currentYear.'-'.$this->currentMonth.'-'.($this->currentDay)));
              
             $availablitydatacount =  isset($availabilitycountcollection) ? $availabilitycountcollection->available_room : 0;
-            $input_tag   = '-<span>'.$availablitydatacount.'</span>';
+            $input_tag   = '';
         }else{
             $input_tag   = '';
         }

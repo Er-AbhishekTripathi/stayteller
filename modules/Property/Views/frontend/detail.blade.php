@@ -293,15 +293,18 @@
                                                     
                                                     $user = auth()->user();
                                                     $roles = isset($user) ? $user->getRoleNames() : '' ;
+                                                    
                                                     ?>
-                                                    @if(isset($roles[0]) && ($roles[0] != 'Owner'))
-                                                    @if($totalbed != ''  )
+                                                    @if(isset($roles[0]) && (trim($roles[0]) != 'Owner'))
+                                                    @if($totalbed != '' )
+                                                   
                                                             <a class="btn btn-danger bravo-button-book-mobile text-white " data-roomid = "{{$roomdatainfo->id}}" data-propertyid = "{{$roomdatainfo->property_id}}">{{__("Book Now")}}</a>
                                                         @else
                                                             <a class="btn btn-block btn-thm" data-toggle="modal" data-target="#enquiry_form_modal">{{__("Sold Out")}}</a>
                                                         @endif
                                                         @else
-                                                        @if($totalbed != ''  )
+                                                        
+                                                        @if($totalbed != '' && $roles == ''  )
                                                             <a class="btn btn-danger bravo-button-book-mobile text-white " data-roomid = "{{$roomdatainfo->id}}" data-propertyid = "{{$roomdatainfo->property_id}}">{{__("Book Now")}}</a>
                                                         @else
                                                             <a class="btn btn-block btn-thm" data-toggle="modal" data-target="#enquiry_form_modal">{{__("Sold Out")}}</a>
