@@ -1,10 +1,52 @@
 <div class="panel">
+    
     <div class="panel-title"><strong>{{__("Property Content")}}</strong></div>
     <div class="panel-body">
-        <div class="form-group">
-            <label>{{__("Title")}}</label>
-            <input type="text" value="{{$translation->title}}" placeholder="{{__("Name of the property")}}" name="title" class="form-control">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>{{__("Title")}}</label>
+                    <input type="text" value="{{$translation->title}}" placeholder="{{__("Name of the property")}}" name="title" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-6">
+               
+                    <label>{{__("Category")}}</label>
+                    <div class="form-group">
+                                    
+                                        <select name="category_id" class="form-control">
+                                            <option value="">{{__("-- Please Select --")}}</option>
+                                            <?php
+                                            $traverse = function ($categories, $prefix = '') use (&$traverse, $row) {
+                                                foreach ($categories as $category) {
+                                                    $selected = '';
+                                                    if ($row->category_id == $category->id)
+                                                        $selected = 'selected';
+                                                    printf("<option value='%s' %s>%s</option>", $category->id, $selected, $prefix . ' ' . $category->name);
+                                                    $traverse($category->children, $prefix . '-');
+                                                }
+                                            };
+                                            $traverse($property_category);
+                                            ?>
+                                        </select>
+                                  
+                                </div>`
+               
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>{{__("Mobile Number")}}</label>
+                    <input type="text" value="{{$translation->title}}" placeholder="{{__("Property Mobile number")}}" name="mobile_number" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>{{__("Alternative Mobile Number")}}</label>
+                    <input type="text" value="{{$translation->title}}" placeholder="{{__("property alternative mobile number")}}" name="mobile_number" class="form-control">
+                </div>
+            </div>
         </div>
+        
         <div class="form-group">
             <label class="control-label">{{__("Content")}}</label>
             <div class="">
@@ -39,7 +81,7 @@
 
 @include('Property::admin.property.pricing')
 @if(is_default_lang())
-<div class="panel">
+<div class="panel" style="display: none;">
     <div class="panel-title"><strong>{{__("Extra Info")}}</strong></div>
     <div class="panel-body">
         <div class="row">
@@ -83,8 +125,14 @@
     </div>
 </div>
 @endif
+<div class="form-group">
+            <label class="control-label">{{__("policy")}}</label>
+            <div class="">
+                <textarea name="policy" class="d-none has-ckeditor" cols="30" rows="10">{{$translation->content}}</textarea>
+            </div>
+        </div>
 @if(is_default_lang())
-<div class="panel">
+<div class="panel" style="display: none;">
     <div class="panel-title"><strong>{{__("Additional details")}}</strong></div>
     <div class="panel-body">
         <div class="row">
