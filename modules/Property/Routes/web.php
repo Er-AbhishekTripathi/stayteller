@@ -23,7 +23,8 @@ Route::group(['prefix'=>'user/'.config('property.property_route_prefix'),'middle
     Route::get('bulkEdit/{id}','ManagePropertyController@bulkEditProperty')->name("property.vendor.bulk_edit");
     Route::get('/booking-report','ManagePropertyController@bookingReport')->name("property.vendor.booking_report");
     Route::get('/booking-report/bulkEdit/{id}','ManagePropertyController@bookingReportBulkEdit')->name("property.vendor.booking_report.bulk_edit");
-	Route::get('clone/{id}','ManagePropertyController@cloneProperty')->name("property.vendor.clone");
+	Route::get('clone/{id}','ManagePropertyController@cloneProperty')->name("property.vendor.clone"); 
+    Route::get('/roomainfo','ManagePropertyController@roominfo')->name('rooms.info');
     
 });
 

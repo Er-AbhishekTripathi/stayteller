@@ -371,7 +371,7 @@ class RoomController extends Controller
              $room_availability->start_date          = $ppdate;
              $room_availability->save();
 
-           echo $ppdate.'<br>';
+           //echo $ppdate.'<br>';
         }
         //dd('welcome');
     }

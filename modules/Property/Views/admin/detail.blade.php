@@ -71,7 +71,7 @@
                                 </div>`
                             </div>
                         </div>
-                        @endif 
+                        @endif
                         @if(is_default_lang())
                         <div class="panel">
                             <div class="panel-title"><strong>{{__("Property type")}}</strong></div>
@@ -85,7 +85,7 @@
                                     </div>
                                     <div>
                                         <label class="cursor-pointer">
-                                            <input type="radio" name="property_type" id="property_type_rent"  value="2" @if(old('property_type',$row->property_type ?? 0) == 2) checked @else checked  @endif> 
+                                            <input type="radio" name="property_type" id="property_type_rent"  value="2" @if(old('property_type',$row->property_type ?? 0) == 2) checked @endif> 
                                             {{__("For rent")}}
                                         </label>
                                     </div>

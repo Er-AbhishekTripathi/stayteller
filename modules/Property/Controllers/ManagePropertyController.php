@@ -11,6 +11,9 @@ use Modules\Booking\Models\Booking;
 use Modules\Property\Models\PropertyTerm;
 use Modules\Property\Models\PropertyTranslation;
 use Modules\Property\Models\PropertyCategory;
+use Modules\Room\Models\Availability;
+use Modules\Room\Models\Room;
+
 use Illuminate\Support\Facades\DB;
 
 class ManagePropertyController extends FrontendController
@@ -125,123 +128,364 @@ class ManagePropertyController extends FrontendController
         return view('Property::frontend.manageProperty.detail', $data);
     }
 
-
     public function store( Request $request, $id ){
-
-
-
-        $rules = [
-            'title'     => 'required',
-            
-            'price'     => 'required',
-            'location_id'=>'required',
-            'address'     => 'required',
-            'map_lat'       =>'required',
-            'map_lng'       =>'required',
-            'category_id'       =>'required',
-            
-        ];
-        $messages = [
-            'title.required'         => __('Property title is required field'),
+        //room info store
+         
           
-            'price.required'         => __('property price is required field'),
-            'location_id'             => __('property location is required field'),
-            'address'                  => __('property address is required field'),
-            'address'                  => __('property address is required field'),
-            'map_lat'                  => __('property lat is required field'),
-            'map_lng'                  => __('property lng is required field'),
-            'category_id'                  => __('property Category is required field'),
+          
+  
+  
+  
+          $rules = [
+              'title'     => 'required',
+              
+              
+              'location_id'=>'required',
+              'address'     => 'required',
+              'map_lat'       =>'required',
+              'map_lng'       =>'required',
+              'category_id'       =>'required',
+              
+          ];
+          $messages = [
+              'title.required'         => __('Property title is required field'),
+            
+             
+              'location_id'             => __('property location is required field'),
+              'address'                  => __('property address is required field'),
+              'address'                  => __('property address is required field'),
+              'map_lat'                  => __('property lat is required field'),
+              'map_lng'                  => __('property lng is required field'),
+              'category_id'                  => __('property Category is required field'),
+  
+  
+             
+          ];
+          $validator = \Validator::make($request->all(), $rules, $messages);
+          if ($validator->fails()) {
+              return redirect()->back()->withErrors($validator)->withInput();
+          }
+  
+  
+  
+  
+          if($id>0){
+              $this->checkPermission('property_update');
+              $row = $this->propertyClass::find($id);
+              if (empty($row)) {
+                  return redirect(route('property.vendor.index'));
+              }
+  
+              if($row->create_user != Auth::id() and !$this->hasPermission('property_manage_others'))
+              {
+                  return redirect(route('property.vendor.index'));
+              }
+          }else{
+              $this->checkPermission('property_create');
+              $row = new $this->propertyClass();
+              $row->status = "publish";
+              if(setting_item("property_vendor_create_service_must_approved_by_admin", 0)){
+                  $row->status = "pending";
+              }
+          }
+          $dataKeys = [
+              'title',
+              'content',
+              'price',
+              'is_instant',
+              'video',
+              'faqs',
+              'image_id',
+              'banner_image_id',
+              'gallery',
+              'bed',
+              'bathroom',
+              'square',
+              'garages',
+              'year_built',
+              'area',
+              'area_unit',
+              'location_id',
+              'category_id',
+              'address',
+              'map_lat',
+              'map_lng',
+              'map_zoom',
+              'default_state',
+              'price',
+              'sale_price',
+              'max_guests',
+              'enable_extra_price',
+              'extra_price',
+              'is_featured',
+              'default_state',
+              'deposit',
+              'pool_size',
+              'additional_zoom',
+              'remodal_year',
+              'amenities',
+              'equipment',
+              'property_type',
+              'is_sold'
+          ];
+          if($this->hasPermission('property_manage_others')){
+              $dataKeys[] = 'create_user';
+          }
+          $row->fillByAttr($dataKeys,$request->input());
+          //$row->ical_import_url  = $request->ical_import_url;
+  
+      
+  
+          $res = $row->saveOriginOrTranslation(null,true);
+  
+         
+  
+          if ($res) {
+              if(!$request->input('lang') or is_default_lang('null')) {
+                  $this->saveTerms($row, $request);
+              }
+  
+              if($id > 0 ){
+                  return back()->with('success',  __('Property updated') );
+              }else{
+  
+                  $attributecollection  = $this->attributesClass::where('service', 'property')->get();
+                  $attributedata = array();
+                  foreach($attributecollection as $attribute){
+                      $strdatareplace = str_replace("-", "_", $attribute->slug);
+                     
+                      if($attribute->room_Property == 1){
+                          $attributedata[] =array($strdatareplace => $request->$strdatareplace,
+                      );
+                     
+                      }
+                      if($attribute->features_enable == 1){
+                           $choice = str_replace("-", "_", $attribute->slug.'_choice');
+                          $feature[] = array($strdatareplace => isset($request->$choice) ? implode(',',$request->$choice) : array());
+                      }
+                  }
+                  $roominfo  = $request->room_name;
+          
+                  foreach($roominfo as $key =>$value){
+  
+                      $sharing_type = $request->sharing_type[$key];
+          
+                      switch( $request->sharing_type) {
+                          case('33'):
+               
+                              $sharingtype  = 1;
+               
+                              break;
+               
+                          case('34'):
+                               
+                              $sharingtype  = 2;
+               
+                              break;
+                          case('35'):
+                               
+                                  $sharingtype  = 3;
+                   
+                                  break;    
+                          case('36'):
+                               
+                                  $sharingtype  = 4;
+                   
+                                  break;    
+                          case('37'):
+                               
+                                  $sharingtype  = 5;
+                   
+                                  break;    
+                          case('38'):
+                               
+                                  $sharingtype  = 6;
+                   
+                                  break;    
+                          case('39'):
+                               
+                                  $sharingtype  = 10;
+                   
+                                  break;    
+               
+                          default:
+                              $sharingtype = '0.';
+                      }
+          
+          
+          
+                      $room                       = new Room();
+                      $room->property_id          = $row->id;
+                      $room->name                 = $request->room_name[$key];
+                      foreach($attributedata as $attr){
+                          foreach($attr as $keys  => $att){
+                              $data[] =  array($keys =>$att[$key]);
+                          }
+                      }
+          
+                      foreach($feature as $feat){
+                      
+                          foreach($feat as $fekeys  => $fet){
+                              $fedata[] =  array($fekeys =>isset($fet[$key]) ?  $fet[$key] : '');
+                          }
+                      }
+          
+                      $room->room_info            = json_encode($data);
+                      $room->amenities_details    = json_encode($fedata);
+                      $room->no_of_room           = $request->no_of_room[$key] ;
+                      $room->price_per_month      = $request->price_per_month[$key];
+                      $room->refundable             = isset($request->refundable[$key]) ?  $request->refundable[$key] : 0;
+                      $room->create_user          = Auth::id();
+                      $room->update_user          =  Auth::id();
+                      $room->save();
+          
+                      if($id == 0){
+                  
+                          $n= 90;
+                          $i = 0;
+                          $date = date(date('d-m-Y'));
+                        
+                          while($i <= $n) {
+                              $room_availability                      = new Availability();
+                              $add_days =  $i++;
+                              $ppdate = date('Y-m-d',strtotime($date.' +'.$add_days.'days'));
+                              $room_availability->room_id             = $room->id;
+                               $room_availability->available_room      = $room->no_of_room * $sharingtype;
+                               $room_availability->start_date          = $ppdate;
+                               $room_availability->save();
+                  
+                             //echo $ppdate.'<br>';
+                          }
+                          //dd('welcome');
+                      }
+          
+                     
+                      
+          
+                  }
+          
+                 
+                  return redirect(route('property.vendor.edit',['id'=>$row->id]))->with('success', __('Property created') );
+              }
+          }
+      }
+
+
+    // public function store( Request $request, $id ){
+      
+
+    //     $rules = [
+    //         'title'     => 'required',
+            
+            
+    //         'location_id'=>'required',
+    //         'address'     => 'required',
+    //         'map_lat'       =>'required',
+    //         'map_lng'       =>'required',
+    //         'category_id'       =>'required',
+            
+    //     ];
+    //     $messages = [
+    //         'title.required'         => __('Property title is required field'),
+          
+    //         'price.required'         => __('property price is required field'),
+    //         'location_id'             => __('property location is required field'),
+    //         'address'                  => __('property address is required field'),
+    //         'address'                  => __('property address is required field'),
+    //         'map_lat'                  => __('property lat is required field'),
+    //         'map_lng'                  => __('property lng is required field'),
+    //         'category_id'                  => __('property Category is required field'),
 
 
            
-        ];
-        $validator = \Validator::make($request->all(), $rules, $messages);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+    //     ];
+    //     $validator = \Validator::make($request->all(), $rules, $messages);
+    //     if ($validator->fails()) {
+    //         return redirect()->back()->withErrors($validator)->withInput();
+    //     }
 
 
 
 
-        if($id>0){
-            $this->checkPermission('property_update');
-            $row = $this->propertyClass::find($id);
-            if (empty($row)) {
-                return redirect(route('property.vendor.index'));
-            }
+    //     if($id>0){
+    //         $this->checkPermission('property_update');
+    //         $row = $this->propertyClass::find($id);
+    //         if (empty($row)) {
+    //             return redirect(route('property.vendor.index'));
+    //         }
 
-            if($row->create_user != Auth::id() and !$this->hasPermission('property_manage_others'))
-            {
-                return redirect(route('property.vendor.index'));
-            }
-        }else{
-            $this->checkPermission('property_create');
-            $row = new $this->propertyClass();
-            $row->status = "publish";
-            if(setting_item("property_vendor_create_service_must_approved_by_admin", 0)){
-                $row->status = "pending";
-            }
-        }
-        $dataKeys = [
-            'title',
-            'content',
-            'price',
-            'is_instant',
-            'video',
-            'faqs',
-            'image_id',
-            'banner_image_id',
-            'gallery',
-            'bed',
-            'bathroom',
-            'square',
-            'garages',
-            'year_built',
-            'area',
-            'area_unit',
-            'location_id',
-            'category_id',
-            'address',
-            'map_lat',
-            'map_lng',
-            'map_zoom',
-            'default_state',
-            'price',
-            'sale_price',
-            'max_guests',
-            'enable_extra_price',
-            'extra_price',
-            'is_featured',
-            'default_state',
-            'deposit',
-            'pool_size',
-            'additional_zoom',
-            'remodal_year',
-            'amenities',
-            'equipment',
-            'property_type',
-            'is_sold'
-        ];
-        if($this->hasPermission('property_manage_others')){
-            $dataKeys[] = 'create_user';
-        }
-        $row->fillByAttr($dataKeys,$request->input());
-	    //$row->ical_import_url  = $request->ical_import_url;
+    //         if($row->create_user != Auth::id() and !$this->hasPermission('property_manage_others'))
+    //         {
+    //             return redirect(route('property.vendor.index'));
+    //         }
+    //     }else{
+    //         $this->checkPermission('property_create');
+    //         $row = new $this->propertyClass();
+    //         $row->status = "publish";
+    //         if(setting_item("property_vendor_create_service_must_approved_by_admin", 0)){
+    //             $row->status = "pending";
+    //         }
+    //     }
+    //     $dataKeys = [
+    //         'title',
+    //         'content',
+    //         'price',
+    //         'is_instant',
+    //         'video',
+    //         'faqs',
+    //         'image_id',
+    //         'banner_image_id',
+    //         'gallery',
+    //         'bed',
+    //         'bathroom',
+    //         'square',
+    //         'garages',
+    //         'year_built',
+    //         'area',
+    //         'area_unit',
+    //         'location_id',
+    //         'category_id',
+    //         'address',
+    //         'map_lat',
+    //         'map_lng',
+    //         'map_zoom',
+    //         'default_state',
+    //         'price',
+    //         'sale_price',
+    //         'max_guests',
+    //         'enable_extra_price',
+    //         'extra_price',
+    //         'is_featured',
+    //         'default_state',
+    //         'deposit',
+    //         'pool_size',
+    //         'additional_zoom',
+    //         'remodal_year',
+    //         'amenities',
+    //         'equipment',
+    //         'property_type',
+    //         'is_sold'
+    //     ];
+    //     if($this->hasPermission('property_manage_others')){
+    //         $dataKeys[] = 'create_user';
+    //     }
+    //     $row->fillByAttr($dataKeys,$request->input());
+	//     //$row->ical_import_url  = $request->ical_import_url;
 
-        $res = $row->saveOriginOrTranslation($request->input('lang'),true);
+    //     $res = $row->saveOriginOrTranslation($request->input('lang'),true);
 
-        if ($res) {
-            if(!$request->input('lang') or is_default_lang($request->input('lang'))) {
-                $this->saveTerms($row, $request);
-            }
+    //     if ($res) {
+    //         if(!$request->input('lang') or is_default_lang($request->input('lang'))) {
+    //             $this->saveTerms($row, $request);
+    //         }
 
-            if($id > 0 ){
-                return back()->with('success',  __('Property updated') );
-            }else{
-                return redirect(route('property.vendor.edit',['id'=>$row->id]))->with('success', __('Property created') );
-            }
-        }
-    }
+    //         if($id > 0 ){
+    //             return back()->with('success',  __('Property updated') );
+    //         }else{
+    //             return redirect(route('property.vendor.edit',['id'=>$row->id]))->with('success', __('Property created') );
+    //         }
+    //     }
+    // }
 
     public function saveTerms($row, $request)
     {
@@ -409,4 +653,183 @@ class ManagePropertyController extends FrontendController
 			return redirect()->back()->with('warning',__($exception->getMessage()));
 		}
 	}
+     public function roominfo()
+    {
+        $attributes = $this->attributesClass::where('service', 'property')->get();
+        $roominfodata = '<div class="panel">
+            <div class="panel-title"><strong>Room Info</strong></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Room Name</label>
+                                    <input type="text" value="" placeholder=" Room Name" name="room_name[]" class="form-control" min="0">
+                        </div>
+                    </div>';
+                    $i =0;
+                    foreach ($attributes as $attribute){
+                       
+                        $strdatareplace = str_replace("-", "_", $attribute->slug);
+                        if($attribute->room_Property ==1){
+                           $roominfodata .='<div class="col-md-4"><div class="form-group"><label>'.$attribute->name.'</label><select name='.str_replace("-", "_", $attribute->slug).'[] class="form-control">
+                                                <option value="">{{__("-- Please Select --")}}</option>
+                                                ';
+                                                foreach($attribute->terms as $term){
+                                                    if(isset($editrow)){
+                                                        if(isset($editrow)){
+                                                            $roominfoarr = json_decode($editrow->room_info);
+                                                           
+                                                             foreach($roominfoarr as $roomdata =>$val){
+                                                                $strdatareplace = str_replace("-", "_", $attribute->slug);
+                                                               
+                                                                if(isset($roominfoarr[$i]->$strdatareplace) && ($roominfoarr[$i]->$strdatareplace == $term->id )){
+                                                                    $selected ='selected' ;
+                                                                   
+                                                                }else{
+                                                                    $selected ='';
+                                                                }
+                                                               
+                                                            }
+                                                        }
+                                                    }else{
+                                                        $selected = '';
+                                                    }
+                                                    $roominfodata .= '<option value='.$term->id.''.$selected.'>'.$term->name.'</option>';
+                                                   
+                                                }
+                                                $roominfodata .=  '</select>
+                                               </div>
+                                        </div>' ;
+
+                                                
+                            }
+                        $i++;
+
+                    }
+
+
+                    $roominfodata .= '</div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-title"><strong>Amenities details</strong></div>
+                    <div class="panel-body">
+                        <div class="row">';
+                        $j =0;
+                        foreach ($attributes as $attribute){
+                            if($attribute->features_enable == 1){
+                                $roominfodata .= '<div class="col-md-4">
+                                                    <div class="form-group">';
+                                                    if(isset($editrow)){
+                                                        if(isset($editrow)){
+                                                            $roominfoarr = json_decode($editrow->amenities_details);
+                                                           
+                                                           
+                                                             foreach($roominfoarr as $roomdata =>$val){
+                                                                $strdatareplace = str_replace("-", "_", $attribute->slug);
+                                                               
+                                                               
+                                                                if(isset($roominfoarr[$j]->$strdatareplace) && ($roominfoarr[$j]->$strdatareplace != '' )){
+                                                                    $checked = 'checked';
+                                                                   
+                                                                   if($roominfoarr[$j]->$strdatareplace != []){
+                                                                    $show = explode(',',$roominfoarr[$j]->$strdatareplace);
+                                                                   }else{
+                                                                    $show = array();
+                                                                   }
+                                                                  
+                                                                    $style = 'display: block;';
+                                                                   
+                                                                }else{
+                                                                   $checked = '';
+                                                                   $show =array();
+                                                                   $style = 'display: none;';
+                                                                }
+                                                               
+                                                            }
+                                                        }
+                                                    }else{
+                                                        $checked = '';
+                                                        $style = 'display: none;';
+                                                        $show =array();
+                                                        $slug = str_replace('-', '_', $attribute->slug);
+                                                    }
+                                                   $roominfodata .= '<label><input type="checkbox" value = "'.$attribute->name.'"  name='.$slug.'[] data-value = '.$slug.' data-id = "'.$attribute->id.'" data-attributes = "'.$attribute->name.'"data-show = "'.$attribute->features_choice.'" class="form-control amenities_details"'.$checked.'>'.$attribute->name.'
+                                                   </label>
+                                                </div>
+                                                <div class = "form-group show_choice '.$slug.'_'.$attribute->id.'" style ="'.$style.'">' ;
+                                                foreach($attribute->terms as $term){
+                                                    if(in_array($term->name,$show)){
+                                                        $choice_checked = 'checked';
+                                                       }else{
+                                                        $choice_checked = '';
+                                                       }
+                                                       $roominfodata .= '<label><input type = "checkbox" name= "'.$slug.'_choice[]" class ="amenities '.$attribute->name.'_'.$attribute->id.'" value = "'.$term->name.'" '.$choice_checked.'>'.$term->name.'</label>';
+                                                }
+                                                $roominfodata .= '</div>
+                                                </div>';
+                                                $j++;
+
+                            }
+                        }
+
+
+
+    $roominfodata .= '</div>    
+                    </div>
+            </div> <div class="panel">
+            <div class="panel-title"><strong>Pricing details</strong></div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>No Of Rooms</label>
+                            <input type="text" value="" name="no_of_room[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Price Per Month</label>
+                            <input type="text" value="" name="price_per_month[]"class="form-control">
+                        </div>
+                    </div>
+        
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Deposit</label>
+                            
+                            <input type="number" value="" name="deposits[]" class="form-control">
+                              
+                             
+                        </div>
+                    </div>
+        
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Deposit</label>
+                            <div class="form-group">
+                                <input id="switch-onColor" type="checkbox"  value="1" name="refundable[]">
+                                <label>Refundable </label>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+            </div>       
+            
+            
+            ';
+
+           
+
+
+            
+
+          
+           
+
+
+      
+       return json_encode($roominfodata);
+    }
 }

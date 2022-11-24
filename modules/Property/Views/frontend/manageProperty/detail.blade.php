@@ -32,7 +32,7 @@
                         <div class="form-group">
                             <label>{{__("Room Name")}}</label>
                             <input type="text" value="{{(isset($editrow)) ? $editrow->name : ''}}"
-                                placeholder="{{__(' Room Name')}}" name="name" class="form-control" min="0">
+                                placeholder="{{__(' Room Name')}}" name="room_name[]" class="form-control" >
                         </div>
                     </div>
                     @php
@@ -46,7 +46,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>{{$attribute->name}}</label>
-                            <select name='{{str_replace("-", "_", $attribute->slug)}}' class="form-control">
+                            <select name='{{str_replace("-", "_", $attribute->slug)}}[]' class="form-control">
                                 <option value="">{{__("-- Please Select --")}}</option>
                                 @foreach($attribute->terms as $term)
                                 <?php
@@ -138,7 +138,7 @@
                     }
                     ?>
 
-                    <label><input type="checkbox" value = "{{$attribute->name}}"  name='{{str_replace("-", "_", $attribute->slug)}}' data-value = '{{str_replace("-", "_", $attribute->slug)}}' data-id = "{{$attribute->id}}" data-attributes = "{{$attribute->name}}"data-show = "{{$attribute->features_choice}}" class="form-control amenities_details"{{$checked}}>{{$attribute->name}}
+                    <label><input type="checkbox" value = "{{$attribute->name}}"  name='{{str_replace("-", "_", $attribute->slug)}}[]' data-value = '{{str_replace("-", "_", $attribute->slug)}}' data-id = "{{$attribute->id}}" data-attributes = "{{$attribute->name}}"data-show = "{{$attribute->features_choice}}" class="form-control amenities_details"{{$checked}}>{{$attribute->name}}
                                         </label>
                 </div>
                     <div class = 'form-group show_choice {{str_replace("-", "_", $attribute->slug)}}_{{$attribute->id}}' style ="{{$style}}">
@@ -168,20 +168,19 @@
     </div>
 </div>
 <div class="panel">
-    <div class="panel-title"><strong>{{__("pricing details")}}</strong></div>
+    <div class="panel-title"><strong>{{__("Pricing details")}}</strong></div>
     <div class="panel-body">
         <div class="row">
-
             <div class="col-md-4">
                 <div class="form-group">
                     <label>No Of Rooms</label>
-                    <input type="text" value="{{$editrow->no_of_room ?? ''}}" name="no_of_room" class="form-control">
+                    <input type="text" value="{{$editrow->no_of_room ?? ''}}" name="no_of_room[]" class="form-control">
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
                     <label>Price Per Month</label>
-                    <input type="text" value="{{$editrow->price_per_month ?? ''}}" name="price_per_month"
+                    <input type="text" value="{{$editrow->price_per_month ?? ''}}" name="price_per_month[]"
                         class="form-control">
                 </div>
             </div>
@@ -189,25 +188,40 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label>Deposit</label>
-                    <div class="form-group">
-                        <input id="switch-onColor" type="radio" checked value="1" name="refundable" @if(isset($editrow))
-                            {{($editrow->refundable == '1') ? 'checked':''}} @endif>
-                        <label>Refundable </label>
-                        <input id="switch-onColor" type="radio" value="0" name="refundable" @if(isset($editrow))
-                            {{($editrow->refundable == '0') ? 'checked':''}} @endif>
-                        <label>Non Refundable</label>
-                    </div>
+                    
+                    <input type="number" value="{{$editrow->no_of_room ?? ''}}" name="deposits[]" class="form-control">
+                      
+                     
                 </div>
             </div>
 
-
-
-
-
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Deposit</label>
+                    <div class="form-group">
+                        <input id="switch-onColor" type="checkbox"  value="1" name="refundable[]" @if(isset($editrow))
+                            {{($editrow->refundable == '1') ? 'checked':''}} @endif>
+                        <label>Refundable </label>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+     </div>
+    </div>  
+    
+    <div class="panel">
+        <div class="panel-body">
+            <div id='TextBoxesGroup'>
+                <div id="TextBoxDiv1">
+                    <label>Textbox #1 : </label><input type='textbox' id='textbox1'>
+                </div>
+            </div>
+            <input type='button' value='Add Button' id='addButton'>
+<input type='button' value='Remove Button' id='removeButton'>
         </div>
     </div>
-                </div>  
-        </div>
+</div>
         
         
 
@@ -294,6 +308,75 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/additional-methods.min.js"></script>
 
 {!! App\Helpers\MapEngine::scripts() !!}
+<script type="text/javascript">
+
+$(document).ready(function(){
+    var counter = 2;
+    $("#addButton").click(function () {
+        $i =0;
+        if(counter>10){
+            alert("Only 10 textboxes allow");
+            return false;
+        } 
+        $.ajax({
+    url: "{{route('rooms.info')}}",
+    data: {
+       
+        _token: "{{csrf_token()}}",
+    },
+    dataType: 'json',
+    type: 'get',
+    beforeSend: function(xhr) {
+        ajaxReady = 0;
+    },
+    success: function(res) {
+
+      
+        var newTextBoxDiv = $(document.createElement('div'))
+	     .attr("id", 'TextBoxDiv' + counter);
+         newTextBoxDiv.after().html(res+'</div></div>');
+          newTextBoxDiv.appendTo("#TextBoxesGroup");
+          counter++;
+
+
+
+    },
+    error: function() {
+        ajaxReady = 1;
+    }
+})
+
+
+        var newTextBoxDiv = $(document.createElement('div'))
+	     .attr("id", 'TextBoxDiv' + counter);
+         newTextBoxDiv.after().html('<label>Textbox #'+ counter + ' : </label>' +
+	      '');
+          newTextBoxDiv.appendTo("#TextBoxesGroup");
+          counter++;
+     });
+
+     $("#removeButton").click(function () {
+	if(counter==1){
+          alert("No more textbox to remove");
+          return false;
+       }   
+        
+	counter--;
+			
+        $("#TextBoxDiv" + counter).remove();
+			
+     });
+		
+     $("#getButtonValue").click(function () {
+		
+	var msg = '';
+	for(i=1; i<counter; i++){
+   	  msg += "\n Textbox #" + i + " : " + $('#textbox' + i).val();
+	}
+    	  alert(msg);
+     });
+  });
+</script>
 <script>
 
     $(function () {
